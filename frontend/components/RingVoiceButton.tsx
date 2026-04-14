@@ -4,7 +4,7 @@ import Vapi from "@vapi-ai/web";
 import { Mic, MicOff, Radio } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { createConversation, createReminder, createTask, getMemoryProfile, listConversations, listTasks, patchTask, retrieveContext } from "@/lib/api";
+import { createConversation, createReminder, createTask, getMemoryProfile, listConversations, listTasks, patchTask, retrieveContext, listReminders } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
 
 type VoiceState = "idle" | "listening" | "processing" | "speaking";
@@ -87,13 +87,39 @@ export function RingVoiceButton() {
 
   const startCall = async () => {
     if (!vapiRef.current || !assistantId) return;
-    const [conversations, memory] = await Promise.all([listConversations(MOCK_USER_ID), getMemoryProfile(MOCK_USER_ID)]);
+    const [conversations, memory, tasks, reminders] = await Promise.all([
+      listConversations(MOCK_USER_ID), 
+      getMemoryProfile(MOCK_USER_ID),
+      listTasks(MOCK_USER_ID),
+      listReminders(MOCK_USER_ID)
+    ]);
     const recentSummaries = conversations
       .slice(0, 5)
       .map((c, i) => `${i + 1}. ${c.summary || c.transcript.slice(0, 120)}`)
       .join("\n");
     const memoryFacts = (memory?.profile?.facts || []).slice(0, 8).map((f: string, i: number) => `${i + 1}. ${f}`).join("\n");
-    const systemContext = `Recent conversation summaries:\n${recentSummaries}\n\nTop memory facts:\n${memoryFacts}`;
+    
+    const activeTasks = tasks.map(t => `- ${t.title} [Status: ${t.status}]`).join('\n');
+    const upcomingReminders = reminders.map(r => `- ${r.title} [Time: ${new Date(r.remind_at).toLocaleString()}]`).join('\n');
+
+    const currentDateIST = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const systemContext = `Current Date & Time (IST): ${currentDateIST}
+    
+Recent conversation summaries:\n${recentSummaries}\n\nTop memory facts:\n${memoryFacts}\n
+Upcoming Calendar Events & Reminders:
+${upcomingReminders || 'None currently.'}
+
+Active To-Dos:
+${activeTasks || 'None currently.'}
+
+CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
+1. You are natively integrated with the user's systems (Google Calendar & To-Do app). You CAN read and schedule reminders, meetings, and tasks immediately.
+2. If the user asks about upcoming events or reminders, read them directly from the provided list in your context above.
+3. NEVER say you are a text-based AI. NEVER tell the user to check their own phone or app. Do not give disclaimers about not having access.
+4. Keep replies extremely concise, direct, and completely in context. No out-of-context replies.
+5. If the user asks to schedule something, simply act as if you've instantly saved it to their Google Calendar/To-Dos. Only ask follow-up questions if critical details (like time/date) are missing.`;
+    
     await vapiRef.current.start(assistantId, {
       variableValues: {
         system_context: systemContext

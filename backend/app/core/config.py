@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
     frontend_origin: str = "http://localhost:3000"
 
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/ring"
+    database_url: str = "sqlite+pysqlite:///./ring.db"
     redis_url: str = "redis://localhost:6379/0"
 
     qdrant_url: str = "http://localhost:6333"
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     qdrant_conversations_collection: str = "ring_conversations"
     qdrant_user_profiles_collection: str = "ring_user_profiles"
 
-    openai_api_key: str | None = None
+    gemini_api_key: str | None = None
     anthropic_api_key: str | None = None
     supabase_jwt_secret: str | None = None
     vapi_assistant_id: str | None = None

@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from anthropic import Anthropic
+from google import genai
 
 from app.core.config import settings
 
-_client: Anthropic | None = None
+_client: genai.Client | None = None
 
 
 def _parse_json(text: str) -> dict[str, Any]:
@@ -19,12 +19,12 @@ def _parse_json(text: str) -> dict[str, Any]:
     return json.loads(raw.strip())
 
 
-def _get_client() -> Anthropic:
+def _get_client() -> genai.Client:
     global _client
     if _client is None:
-        if not settings.anthropic_api_key:
-            raise RuntimeError("ANTHROPIC_API_KEY is not configured")
-        _client = Anthropic(api_key=settings.anthropic_api_key)
+        if not settings.gemini_api_key:
+            raise RuntimeError("GEMINI_API_KEY is not configured")
+        _client = genai.Client(api_key=settings.gemini_api_key)
     return _client
 
 
@@ -36,13 +36,11 @@ def extract_from_conversation(transcript: str) -> dict[str, Any]:
         "Return JSON only.\n\n"
         f"Transcript:\n{transcript}"
     )
-    message = _get_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=1200,
-        messages=[{"role": "user", "content": prompt}],
+    response = _get_client().models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
     )
-    text = message.content[0].text if message.content else "{}"
-    return _parse_json(text)
+    return _parse_json(response.text)
 
 
 def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
@@ -52,11 +50,9 @@ def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
         "Return JSON only.\n\n"
         f"Existing:\n{json.dumps(existing_profile)}\n\nConversation:\n{transcript}"
     )
-    message = _get_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=1000,
-        messages=[{"role": "user", "content": prompt}],
+    response = _get_client().models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
     )
-    text = message.content[0].text if message.content else "{}"
-    return _parse_json(text)
+    return _parse_json(response.text)
 

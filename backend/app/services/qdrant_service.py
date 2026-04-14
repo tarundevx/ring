@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid5
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams
@@ -25,9 +25,16 @@ def ensure_collections() -> None:
         if not client.collection_exists(collection):
             client.create_collection(
                 collection_name=collection,
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=768, distance=Distance.COSINE),
             )
-
+        try:
+            client.create_payload_index(
+                collection_name=collection,
+                field_name="user_id",
+                field_schema="keyword"
+            )
+        except Exception:
+            pass
 
 def upsert_conversation_chunks(user_id: UUID, conversation_id: UUID, chunks: list[str], embeddings: list[list[float]], tags: list[str] | None) -> None:
     client = _get_client()
@@ -36,7 +43,7 @@ def upsert_conversation_chunks(user_id: UUID, conversation_id: UUID, chunks: lis
     for idx, (chunk, vector) in enumerate(zip(chunks, embeddings, strict=True)):
         points.append(
             PointStruct(
-                id=f"{conversation_id}:{idx}",
+                id=str(uuid5(conversation_id, str(idx))),
                 vector=vector,
                 payload={
                     "user_id": str(user_id),
