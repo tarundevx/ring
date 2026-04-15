@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { ConversationCard } from "@/components/ConversationCard";
 import { listConversations, listReminders, listTasks } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";

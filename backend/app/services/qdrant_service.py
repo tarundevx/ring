@@ -15,7 +15,7 @@ _client: QdrantClient | None = None
 def _get_client() -> QdrantClient:
     global _client
     if _client is None:
-        _client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+        _client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key, timeout=5)
     return _client
 
 

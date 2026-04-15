@@ -3,7 +3,9 @@ import type { Conversation } from "@/lib/types";
 export function ConversationCard({ conversation }: { conversation: Conversation }) {
   return (
     <article className="rounded-xl bg-ringcard p-4">
-      <h3 className="text-sm text-zinc-300">{new Date(conversation.created_at).toLocaleString()}</h3>
+      <h3 className="text-sm text-zinc-300">
+        {new Date(conversation.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: 'medium', timeStyle: 'short' })}
+      </h3>
       <p className="mt-2 text-zinc-100">{conversation.summary || conversation.transcript.slice(0, 180)}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {(conversation.tags || []).map((tag) => (

@@ -26,7 +26,10 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup() -> None:
-    ensure_collections()
+    try:
+        ensure_collections()
+    except Exception as e:
+        print(f"Error during collection ensures: {e}")
 
 @app.on_event("shutdown")
 async def shutdown() -> None:

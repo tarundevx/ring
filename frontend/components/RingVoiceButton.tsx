@@ -3,6 +3,7 @@
 import Vapi from "@vapi-ai/web";
 import { Mic, MicOff, Radio } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { createConversation, createReminder, createTask, getMemoryProfile, listConversations, listTasks, patchTask, retrieveContext, listReminders } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
@@ -15,6 +16,7 @@ const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "";
 export function RingVoiceButton() {
   const [state, setState] = useState<VoiceState>("idle");
   const [transcript, setTranscript] = useState("");
+  const router = useRouter();
   const vapiRef = useRef<Vapi | null>(null);
   const transcriptRef = useRef("");
 
@@ -74,6 +76,7 @@ export function RingVoiceButton() {
       setState("idle");
       if (transcriptRef.current.trim()) {
         await createConversation(MOCK_USER_ID, transcriptRef.current);
+        router.refresh();
       }
       setTranscript("");
       transcriptRef.current = "";
@@ -118,7 +121,7 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
 2. If the user asks about upcoming events or reminders, read them directly from the provided list in your context above.
 3. NEVER say you are a text-based AI. NEVER tell the user to check their own phone or app. Do not give disclaimers about not having access.
 4. Keep replies extremely concise, direct, and completely in context. No out-of-context replies.
-5. If the user asks to schedule something, simply act as if you've instantly saved it to their Google Calendar/To-Dos. Only ask follow-up questions if critical details (like time/date) are missing.`;
+5. If the user asks to schedule something, simply act as if you've instantly saved it to their Google Calendar/To-Dos. Only ask follow-up questions if critical details (like time/date) are missing. You are Ring.`;
     
     await vapiRef.current.start(assistantId, {
       variableValues: {
@@ -133,23 +136,55 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
   };
 
   return (
-    <>
+    <div className="flex flex-col items-center gap-12">
       <button
         onClick={state === "idle" ? startCall : stopCall}
-        className="fixed bottom-6 right-6 rounded-full bg-ringaccent p-4 shadow-lg transition hover:scale-105"
+        className="relative w-48 h-48 flex items-center justify-center group outline-none"
         aria-label="Ring voice call"
       >
-        {state === "idle" && <Mic className="h-6 w-6" />}
-        {state === "listening" && <Radio className="h-6 w-6 animate-pulse" />}
-        {(state === "processing" || state === "speaking") && <MicOff className="h-6 w-6" />}
+        {/* Doppler Effect Layers - Trigger only when AI speaks */}
+        {state === "speaking" && (
+          <>
+            <div className="absolute inset-0 rounded-full bg-ringaccent/20 animate-ping duration-[2000ms]" />
+            <div className="absolute inset-4 rounded-full bg-ringaccent/30 animate-ping duration-[2500ms]" />
+            <div className="absolute inset-8 rounded-full bg-ringaccent/40 animate-ping duration-[3000ms]" />
+          </>
+        )}
+
+        {/* Concentric Circle Shapes using Divs */}
+        <div className={`relative z-10 w-full h-full flex items-center justify-center transition-transform duration-700 ${state !== "idle" ? 'scale-110' : 'group-hover:scale-105'}`}>
+          <div className="relative w-40 h-40 flex items-center justify-center">
+            {/* Outer Ring */}
+            <div className={`absolute inset-0 rounded-full border-[3px] border-blue-500/20 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.6s' }} />
+            {/* Third Ring */}
+            <div className={`absolute inset-4 rounded-full border-[3px] border-purple-500/40 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.4s' }} />
+            {/* Second Ring */}
+            <div className={`absolute inset-8 rounded-full border-[3px] border-blue-600/60 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.2s' }} />
+            {/* Inner Ring */}
+            <div className={`absolute inset-12 rounded-full border-[3px] border-purple-600/80 ${state === "speaking" ? "animate-doppler" : ""}`} />
+            
+            {/* Center Core */}
+            <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_20px_rgba(37,99,235,0.5)] ${state !== "idle" ? "animate-pulse" : ""}`} />
+          </div>
+        </div>
       </button>
+
       {state !== "idle" && (
-        <div className="fixed bottom-24 right-6 w-[360px] rounded-xl bg-ringcard p-4 text-sm">
-          <p className="mb-2 text-zinc-300">Live transcript</p>
-          <div className="max-h-48 overflow-y-auto whitespace-pre-wrap text-zinc-100">{transcript || "Listening..."}</div>
+        <div className="w-[440px] rounded-[32px] bg-ringcard/80 backdrop-blur-xl border border-white/5 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex gap-1">
+              <div className="w-1 h-3 bg-ringaccent animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-1 h-3 bg-ringaccent animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-1 h-3 bg-ringaccent animate-bounce" style={{ animationDelay: '0.4s' }} />
+            </div>
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">{state}</p>
+          </div>
+          <div className="max-h-64 overflow-y-auto whitespace-pre-wrap text-[16px] leading-relaxed text-zinc-100 scrollbar-hide font-serif italic">
+            {transcript || "Speak freely..."}
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

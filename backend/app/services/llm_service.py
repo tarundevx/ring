@@ -29,15 +29,19 @@ def _get_client() -> genai.Client:
 
 
 def extract_from_conversation(transcript: str) -> dict[str, Any]:
+    from datetime import datetime
+    current_time = datetime.now().isoformat()
     prompt = (
+        f"Current Time: {current_time}\n"
         "Extract JSON with keys action_items, reminders, entities, topics.\n"
-        "Each action item should include title, description, due_date(optional).\n"
+        "Each action item should include title, description, due_date(optional, YYYY-MM-DD).\n"
         "Each reminder should include title, body, remind_at (ISO datetime).\n"
+        "Use the Current Time provided above to resolve relative dates like 'tomorrow', 'next week', 'in 2 hours', etc.\n"
         "Return JSON only.\n\n"
         f"Transcript:\n{transcript}"
     )
     response = _get_client().models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.0-flash",
         contents=prompt,
     )
     return _parse_json(response.text)

@@ -5,9 +5,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ringbg: "#09090B",
-        ringcard: "#111116",
-        ringaccent: "#4F46E5"
+        ringbg: "#111111",      // The deep dark background for the content
+        ringcard: "#191919",    // The slightly lighter dark for sidebar and inputs
+        ringborder: "#292929",  // Subtle border color
+        ringaccent: "#7c3aed",  // The purple accent color from the screenshot (similar to violet-600)
+        ringaccenthover: "#6d28d9"
       }
     }
   },
