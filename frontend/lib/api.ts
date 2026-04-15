@@ -92,3 +92,63 @@ export async function retrieveContext(userId: string, query: string) {
   return res.json();
 }
 
+export async function getGoogleAuthUrl(userId: string) {
+  const res = await fetch(`${API}/api/auth/google/authorize`, { headers: headers(userId) });
+  return res.json();
+}
+
+export async function getGoogleStatus(userId: string) {
+  try {
+    const res = await fetch(`${API}/api/auth/google/status`, { headers: headers(userId), cache: "no-store" });
+    if (!res.ok) return { connected: false };
+    return res.json();
+  } catch {
+    return { connected: false };
+  }
+}
+
+export async function updateGoogleSettings(userId: string, settings: any) {
+  const res = await fetch(`${API}/api/auth/google/settings`, {
+    method: "POST",
+    headers: headers(userId),
+    body: JSON.stringify(settings)
+  });
+  return res.json();
+}
+
+// Google Workspace Tools
+export async function listCalendarEvents(userId: string) {
+  const res = await fetch(`${API}/api/google/calendar/list`, { headers: headers(userId) });
+  return res.json();
+}
+export async function scheduleEvent(userId: string, event: any) {
+  return fetch(`${API}/api/google/calendar/schedule`, {
+    method: "POST", headers: headers(userId), body: JSON.stringify(event)
+  }).then(r => r.json());
+}
+export async function searchDrive(userId: string, query: string) {
+  const res = await fetch(`${API}/api/google/drive/search?query=${encodeURIComponent(query)}`, { headers: headers(userId) });
+  return res.json();
+}
+export async function readDriveFile(userId: string, fileId: string) {
+  const res = await fetch(`${API}/api/google/drive/read?file_id=${fileId}`, { headers: headers(userId) });
+  return res.json();
+}
+export async function listEmails(userId: string) {
+  const res = await fetch(`${API}/api/google/gmail/list`, { headers: headers(userId) });
+  return res.json();
+}
+export async function draftEmail(userId: string, email: any) {
+  return fetch(`${API}/api/google/gmail/draft`, {
+    method: "POST", headers: headers(userId), body: JSON.stringify(email)
+  }).then(r => r.json());
+}
+
+export async function disconnectGoogle(userId: string) {
+  const res = await fetch(`${API}/api/auth/google/disconnect`, {
+    method: "POST",
+    headers: headers(userId)
+  });
+  return res.json();
+}
+

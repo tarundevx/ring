@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str | None = None
     vapi_assistant_id: str | None = None
 
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    google_redirect_uri: str = "http://localhost:8000/api/auth/google/callback"
+
 
 settings = Settings()
 

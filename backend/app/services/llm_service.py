@@ -49,13 +49,15 @@ def extract_from_conversation(transcript: str) -> dict[str, Any]:
 
 def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
     prompt = (
-        "Given existing profile JSON and a new conversation, return merged updated JSON profile "
-        "with keys: people, projects, preferences, recurring_topics, facts.\n"
-        "Return JSON only.\n\n"
-        f"Existing:\n{json.dumps(existing_profile)}\n\nConversation:\n{transcript}"
+        "You are an identity-mapping engine. Analyze the conversation and the existing profile JSON.\n"
+        "Extract ANY new facts, people, projects, preferences, or recurring topics mentioned.\n"
+        "BE PROACTIVE: If the user mentions a friend's name, add it to 'people'. If they mention a hobby, add to 'preferences'.\n"
+        "Return the full merged JSON profile with keys: people, projects, preferences, recurring_topics, facts.\n"
+        "Ensure the output is valid JSON and contains only the updated profile.\n\n"
+        f"Existing Profile:\n{json.dumps(existing_profile)}\n\nNew Conversation:\n{transcript}"
     )
     response = _get_client().models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.0-flash",
         contents=prompt,
     )
     return _parse_json(response.text)
