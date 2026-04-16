@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { TaskKanban } from "@/components/TaskKanban";
 import { listTasks } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { MemoryGraph } from "@/components/MemoryGraph";
 import { getMemoryProfile } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
