@@ -7,14 +7,9 @@ from groq import Groq
 
 from app.core.config import settings
 
-<<<<<<< HEAD
-_client: Groq | None = None
-=======
-from google.genai.errors import ClientError, APIError
-from fastapi import HTTPException
 
-_client: genai.Client | None = None
->>>>>>> 60306fc0438bfd261d53541302259d74fd4979a1
+_client: Groq | None = None
+
 
 
 def _parse_json(text: str) -> dict[str, Any]:
@@ -51,7 +46,7 @@ def process_full_conversation(transcript: str, existing_profile: dict) -> dict[s
         f"Existing Profile:\n{json.dumps(existing_profile)}\n\n"
         f"Transcript:\n{transcript}"
     )
-<<<<<<< HEAD
+
     
     response = _get_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -75,24 +70,3 @@ def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
         messages=[{"role": "user", "content": prompt}]
     )
     return _parse_json(response.choices[0].message.content)
-=======
-    try:
-        response = _get_client().models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-        )
-        return _parse_json(response.text)
-    except ClientError as e:
-        code = getattr(e, 'code', None) or getattr(e, 'status_code', None)
-        if code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-            raise HTTPException(
-                status_code=429,
-                detail="AI rate limit exceeded. Please wait about a minute and try again."
-            )
-        raise HTTPException(status_code=400, detail=f"AI Client Error ({code}): {str(e)}")
-    except APIError as e:
-        raise HTTPException(status_code=502, detail=f"Upstream AI provider error: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error during AI processing: {str(e)}")
->>>>>>> 60306fc0438bfd261d53541302259d74fd4979a1
-
