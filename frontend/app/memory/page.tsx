@@ -3,7 +3,13 @@ import { getMemoryProfile } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
 
 export default async function MemoryPage() {
-  const memory = await getMemoryProfile(MOCK_USER_ID);
+  let memory: any = { profile: {} };
+  try {
+    memory = await getMemoryProfile(MOCK_USER_ID);
+  } catch (err) {
+    console.error("Failed to load memory profile:", err);
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Memory Profile</h1>

@@ -122,19 +122,30 @@ export default function ChatPage() {
   const toggleVoice = async () => {
     if (voiceState === "idle") {
       if (!vapiRef.current || !assistantId) return;
-      const [conversations, memory, tasks, reminders] = await Promise.all([
-        listConversations(MOCK_USER_ID), 
-        getMemoryProfile(MOCK_USER_ID),
-        listTasks(MOCK_USER_ID),
-        listReminders(MOCK_USER_ID)
-      ]);
-      const recentSummaries = conversations.slice(0, 5).map((c, i) => `${i + 1}. ${c.summary || c.transcript.slice(0, 120)}`).join("\n");
+      
+      let conversations: any[] = [];
+      let memory: any = { profile: { facts: [] } };
+      let tasks: any[] = [];
+      let reminders: any[] = [];
+
+      try {
+        [conversations, memory, tasks, reminders] = await Promise.all([
+          listConversations(MOCK_USER_ID), 
+          getMemoryProfile(MOCK_USER_ID),
+          listTasks(MOCK_USER_ID),
+          listReminders(MOCK_USER_ID)
+        ]);
+      } catch (err) {
+        console.error("Failed to load context for voice:", err);
+      }
+
+      const recentSummaries = (conversations || []).slice(0, 5).map((c, i) => `${i + 1}. ${c.summary || c.transcript.slice(0, 120)}`).join("\n");
       const memoryFacts = (memory?.profile?.facts || []).slice(0, 8).map((f: string, i: number) => `${i + 1}. ${f}`).join("\n");
-      const activeTasks = tasks.map(t => `- ${t.title} [Status: ${t.status}]`).join('\n');
-      const upcomingReminders = reminders.map(r => `- ${r.title} [Time: ${new Date(r.remind_at).toLocaleString()}]`).join('\n');
+      const activeTasks = (tasks || []).map(t => `- ${t.title} [Status: ${t.status}]`).join('\n');
+      const upcomingReminders = (reminders || []).map(r => `- ${r.title} [Time: ${new Date(r.remind_at).toLocaleString()}]`).join('\n');
       const currentDateIST = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-      const systemContext = `Current Date & Time: ${currentDateIST}\nRecent summaries:\n${recentSummaries}\nFacts:\n${memoryFacts}\nUpcoming Reminders:\n${upcomingReminders || 'None'}\nTasks:\n${activeTasks || 'None'}\n
+      const systemContext = `Current Date & Time: ${currentDateIST}\nRecent summaries:\n${recentSummaries || 'None'}\nFacts:\n${memoryFacts || 'None'}\nUpcoming Reminders:\n${upcomingReminders || 'None'}\nTasks:\n${activeTasks || 'None'}\n
        CRITICAL INSTRUCTIONS: Act as Ring. Keep replies extremely concise, direct, and completely in context. You are natively integrated with the user's systems (Google Calendar & To-Do app).`;
       
       await vapiRef.current.start(assistantId, { variableValues: { system_context: systemContext } });

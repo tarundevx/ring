@@ -123,32 +123,42 @@ export function RingVoiceButton() {
   const startCall = async () => {
     if (!vapiRef.current || !assistantId) return;
     
-    // Fetch all context including Google Workspace
-    const [conversations, memory, tasks, reminders, googleEvents, googleEmails] = await Promise.all([
-      listConversations(MOCK_USER_ID), 
-      getMemoryProfile(MOCK_USER_ID),
-      listTasks(MOCK_USER_ID),
-      listReminders(MOCK_USER_ID),
-      listCalendarEvents(MOCK_USER_ID).catch(() => ({ events: [] })),
-      listEmails(MOCK_USER_ID).catch(() => ({ emails: [] }))
-    ]);
+    let conversations: any[] = [];
+    let memory: any = { profile: { facts: [] } };
+    let tasks: any[] = [];
+    let reminders: any[] = [];
+    let googleEvents: any = { events: [] };
+    let googleEmails: any = { emails: [] };
 
-    const recentSummaries = conversations
+    try {
+      [conversations, memory, tasks, reminders, googleEvents, googleEmails] = await Promise.all([
+        listConversations(MOCK_USER_ID), 
+        getMemoryProfile(MOCK_USER_ID),
+        listTasks(MOCK_USER_ID),
+        listReminders(MOCK_USER_ID),
+        listCalendarEvents(MOCK_USER_ID).catch(() => ({ events: [] })),
+        listEmails(MOCK_USER_ID).catch(() => ({ emails: [] }))
+      ]);
+    } catch (err) {
+      console.error("Failed to load context for voice:", err);
+    }
+
+    const recentSummaries = (conversations || [])
       .slice(0, 5)
       .map((c, i) => `${i + 1}. ${c.summary || c.transcript.slice(0, 120)}`)
       .join("\n");
       
     const memoryFacts = (memory?.profile?.facts || []).slice(0, 8).map((f: string, i: number) => `${i + 1}. ${f}`).join("\n");
-    const activeTasks = tasks.filter(t => t.status !== 'done').map(t => `- ${t.title}`).join('\n');
+    const activeTasks = (tasks || []).filter(t => t.status !== 'done').map(t => `- ${t.title}`).join('\n');
     
-    const calendarEvents = (googleEvents.events || []).map((e: any) => `- ${e.summary} at ${new Date(e.start.dateTime || e.start.date).toLocaleString()}`).join('\n');
-    const recentEmails = (googleEmails.emails || []).map((m: any) => `- FROM: ${m.from || 'Unknown'} | SUBJECT: ${m.subject}`).join('\n');
+    const calendarEvents = (googleEvents?.events || []).map((e: any) => `- ${e.summary} at ${new Date(e.start.dateTime || e.start.date).toLocaleString()}`).join('\n');
+    const recentEmails = (googleEmails?.emails || []).map((m: any) => `- FROM: ${m.from || 'Unknown'} | SUBJECT: ${m.subject}`).join('\n');
 
     const currentDateIST = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const systemContext = `Current Date & Time (IST): ${currentDateIST}
     
-Recent conversation summaries:\n${recentSummaries}\n\nTop memory facts:\n${memoryFacts}\n
+Recent conversation summaries:\n${recentSummaries || 'None'}\n\nTop memory facts:\n${memoryFacts || 'None'}\n
 
 Google Calendar (Upcoming Events):
 ${calendarEvents || 'No upcoming events found.'}

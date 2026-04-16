@@ -2,7 +2,23 @@ import { getConversation } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
 
 export default async function ConversationDetailPage({ params }: { params: { id: string } }) {
-  const detail = await getConversation(MOCK_USER_ID, params.id);
+  let detail: any = null;
+  try {
+    detail = await getConversation(MOCK_USER_ID, params.id);
+  } catch (err) {
+    console.error("Failed to load conversation detail:", err);
+  }
+
+  if (!detail) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-4">
+        <h2 className="text-xl font-bold">Failed to load conversation</h2>
+        <p className="text-zinc-400">The conversation could not be found or there was an error loading it.</p>
+        <a href="/conversations" className="text-ringaccent hover:underline">Back to conversations</a>
+      </div>
+    );
+  }
+
   const conversation = detail.conversation;
 
   return (

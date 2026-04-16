@@ -4,6 +4,7 @@ export type Conversation = {
   transcript: string;
   summary?: string;
   created_at: string;
+  duration_seconds?: number;
   tags?: string[];
 };
 
