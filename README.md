@@ -25,6 +25,13 @@ Ring is a voice-first knowledge and workflow agent app with a Next.js frontend a
    - `npm install`
    - `npm run dev`
 
+## Render deployment (backend)
+
+- Set the Render service **Root Directory** to `backend`.
+- Use this start command (no `--reload` in production):
+  - `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- A ready-to-use Render Blueprint is included at repo root: `render.yaml`.
+
 ## Architecture highlights
 
 - Voice calls are launched from `RingVoiceButton` using Vapi Web SDK.
