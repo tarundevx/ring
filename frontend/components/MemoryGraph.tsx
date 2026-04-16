@@ -98,14 +98,27 @@ export function MemoryGraph({ profile, tasks = [] }: { profile: any; tasks?: any
 
   const handleMouseUp = () => setIsDragging(false);
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.95 : 1.05;
-    setTransform(prev => ({
-      ...prev,
-      scale: Math.max(0.2, Math.min(10, prev.scale * delta))
-    }));
-  };
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.95 : 1.05;
+      
+      setTransform(prev => {
+        const newScale = Math.max(0.2, Math.min(10, prev.scale * delta));
+        return {
+          ...prev,
+          scale: newScale
+        };
+      });
+    };
+
+    container.addEventListener("wheel", onWheel, { passive: false });
+    return () => container.removeEventListener("wheel", onWheel);
+  }, []);
+
 
   return (
     <div 
@@ -115,7 +128,6 @@ export function MemoryGraph({ profile, tasks = [] }: { profile: any; tasks?: any
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >
       <div className="absolute top-12 left-12 z-10 pointer-events-none">

@@ -19,30 +19,53 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">Recent conversations</h2>
-        {conversations.length === 0 ? (
-          <p className="text-muted-foreground">No recent conversations or failed to load.</p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {conversations.slice(0, 4).map((c) => (
-              <ConversationCard key={c.id} conversation={c} />
-            ))}
+    <div className="p-8 max-w-6xl mx-auto space-y-12">
+      <header className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+        <p className="text-zinc-500 text-sm">Welcome back. Here's what's happening today.</p>
+      </header>
+
+      <div className="grid gap-8">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Recent conversations</h2>
           </div>
-        )}
-      </section>
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl bg-ringcard p-4">
-          <h3 className="mb-2 font-semibold">Active tasks</h3>
-          <p className="text-3xl">{tasks.filter((t) => t.status !== "done").length}</p>
-        </div>
-        <div className="rounded-xl bg-ringcard p-4">
-          <h3 className="mb-2 font-semibold">Upcoming reminders</h3>
-          <p className="text-3xl">{reminders.filter((r) => r.status === "pending").length}</p>
-        </div>
-      </section>
+          
+          {conversations.length === 0 ? (
+            <div className="h-40 border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center text-zinc-600 italic">
+              No recent conversations or failed to load.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {conversations.slice(0, 4).map((c) => (
+                <ConversationCard key={c.id} conversation={c} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-2">
+          <div className="group p-8 bg-ringcard border border-ringborder/50 rounded-[32px] hover:bg-white/5 transition-all duration-300">
+            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Active tasks</h3>
+            <div className="flex items-end gap-3">
+              <span className="text-5xl font-bold text-white leading-none">
+                {tasks.filter((t) => t.status !== "done").length}
+              </span>
+              <span className="text-sm font-medium text-zinc-500 mb-1">To be completed</span>
+            </div>
+          </div>
+
+          <div className="group p-8 bg-ringcard border border-ringborder/50 rounded-[32px] hover:bg-white/5 transition-all duration-300">
+            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Upcoming reminders</h3>
+            <div className="flex items-end gap-3">
+              <span className="text-5xl font-bold text-white leading-none">
+                {reminders.filter((r) => r.status === "pending").length}
+              </span>
+              <span className="text-sm font-medium text-zinc-500 mb-1">Scheduled</span>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

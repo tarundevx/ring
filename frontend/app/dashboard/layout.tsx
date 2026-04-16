@@ -60,17 +60,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
-        <div className="p-4 mt-auto">
-          <div className="pt-4 border-t border-white/5 flex items-center gap-3 px-3">
-            <div className="w-8 h-8 rounded-full bg-ringaccent/10 border border-ringaccent/20 text-ringaccent flex items-center justify-center text-xs font-bold">
-              T
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold truncate">tarun</p>
-              <p className="text-[10px] text-zinc-500 truncate">tarundevx@gmail.com</p>
-            </div>
-          </div>
-        </div>
+
       </aside>
 
       {/* Main Content Area */}

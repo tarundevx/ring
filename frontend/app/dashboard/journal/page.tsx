@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Book, Mic, Flame, Calendar, ChevronRight } from "lucide-react";
+import { Mic, Calendar, ChevronRight } from "lucide-react";
 import { RingVoiceButton } from "@/components/RingVoiceButton";
 import { listConversations } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
@@ -48,9 +48,9 @@ export default function JournalPage() {
           <p className="text-zinc-400">Reflect on your day, maintain your streak, and grow with Ring.</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-orange-500/10 text-orange-500 px-4 py-2 rounded-2xl border border-orange-500/20">
-          <Flame className="w-5 h-5 fill-current" />
-          <span className="font-bold text-lg">{streak} Day Streak</span>
+        <div className="flex items-center gap-1.5 bg-zinc-900 border border-white/5 px-3 py-1.5 rounded-full">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Streak</span>
+          <span className="font-bold text-sm text-zinc-100">{streak} Days</span>
         </div>
       </header>
 
@@ -58,9 +58,7 @@ export default function JournalPage() {
       <div className="relative group overflow-hidden rounded-3xl bg-ringcard border border-ringborder/50 p-12 flex flex-col items-center text-center space-y-6">
         <div className="absolute inset-0 bg-gradient-to-b from-ringaccent/5 to-transparent pointer-events-none" />
         
-        <div className="w-24 h-24 rounded-full bg-ringaccent/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-500">
-           <Book className="w-12 h-12 text-ringaccent" />
-        </div>
+
         
         <div className="space-y-3 relative">
           <h2 className="text-2xl font-bold text-zinc-100">Ready to talk about your day?</h2>
@@ -84,7 +82,7 @@ export default function JournalPage() {
           <div className="h-32 flex items-center justify-center text-zinc-600">Loading your memories...</div>
         ) : entries.length === 0 ? (
           <div className="h-48 border-2 border-dashed border-white/5 rounded-3xl flex flex-col items-center justify-center space-y-2 text-zinc-600">
-            <Book className="w-8 h-8 opacity-20" />
+
             <p className="text-sm">No journal entries yet. Start by speaking!</p>
           </div>
         ) : (

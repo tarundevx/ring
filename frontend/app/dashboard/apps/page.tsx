@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Mail, FileText, ChevronRight, Check, AlertCircle } from "lucide-react";
+import { Calendar, Mail, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { getGoogleAuthUrl, getGoogleStatus, updateGoogleSettings, disconnectGoogle } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
 
@@ -107,7 +107,7 @@ export default function AppsPage() {
           <div className="mt-12 grid gap-4 md:grid-cols-3">
             {[
               { key: "enabled_calendar", icon: Calendar, label: "Calendar", desc: "List & Schedule Events" },
-              { key: "enabled_drive", icon: FileText, label: "Drive", desc: "Search & Read Docs" },
+
               { key: "enabled_mail", icon: Mail, label: "Gmail", desc: "Read & Draft Replies" },
             ].map((srv) => (
               <div key={srv.key} className="p-6 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-4">
