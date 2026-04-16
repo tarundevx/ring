@@ -28,4 +28,5 @@ class ConversationDetail(BaseModel):
     conversation: ConversationResponse
     extracted_tasks: list[dict]
     extracted_reminders: list[dict]
+    ai_error_type: str | None = None  # "rate_limit" or "other"
 
