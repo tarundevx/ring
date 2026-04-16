@@ -25,6 +25,12 @@ app.add_middleware(
 
 app.include_router(api_router)
 
+
+@app.get("/")
+def root() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.on_event("startup")
 async def startup() -> None:
     try:
