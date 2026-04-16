@@ -107,8 +107,16 @@ export function RingVoiceButton() {
     client.on("call-end", async () => {
       setState("idle");
       if (transcriptRef.current.trim()) {
-        await createConversation(MOCK_USER_ID, transcriptRef.current);
-        router.refresh();
+        try {
+          const res = await createConversation(MOCK_USER_ID, transcriptRef.current);
+          if (res.ai_extraction_skipped) {
+            window.alert("We're receiving too many requests right now. Your conversation is saved, but AI processing is delayed. Please try again in 40 seconds.");
+          }
+          router.refresh();
+        } catch (err: any) {
+          console.error("Failed to store conversation", err);
+          window.alert(err.message);
+        }
       }
       setTranscript("");
       transcriptRef.current = "";

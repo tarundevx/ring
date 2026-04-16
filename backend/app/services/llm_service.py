@@ -7,6 +7,9 @@ from google import genai
 
 from app.core.config import settings
 
+from google.genai.errors import ClientError, APIError
+from fastapi import HTTPException
+
 _client: genai.Client | None = None
 
 
@@ -40,11 +43,23 @@ def extract_from_conversation(transcript: str) -> dict[str, Any]:
         "Return JSON only.\n\n"
         f"Transcript:\n{transcript}"
     )
-    response = _get_client().models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
-    return _parse_json(response.text)
+    try:
+        response = _get_client().models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
+        return _parse_json(response.text)
+    except ClientError as e:
+        if e.status_code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            raise HTTPException(
+                status_code=429,
+                detail="AI rate limit exceeded. Please wait about a minute and try again."
+            )
+        raise HTTPException(status_code=400, detail=f"AI Client Error: {str(e)}")
+    except APIError as e:
+        raise HTTPException(status_code=502, detail="Upstream AI provider error. Please try again later.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error during AI extraction: {str(e)}")
 
 
 def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
@@ -56,9 +71,21 @@ def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
         "Ensure the output is valid JSON and contains only the updated profile.\n\n"
         f"Existing Profile:\n{json.dumps(existing_profile)}\n\nNew Conversation:\n{transcript}"
     )
-    response = _get_client().models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
-    return _parse_json(response.text)
+    try:
+        response = _get_client().models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
+        return _parse_json(response.text)
+    except ClientError as e:
+        if e.status_code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            raise HTTPException(
+                status_code=429,
+                detail="AI rate limit exceeded. Please wait about a minute and try again."
+            )
+        raise HTTPException(status_code=400, detail=f"AI Client Error: {str(e)}")
+    except APIError as e:
+        raise HTTPException(status_code=502, detail="Upstream AI provider error. Please try again later.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error during AI merging: {str(e)}")
 
