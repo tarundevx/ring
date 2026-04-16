@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from google import genai
+from groq import Groq
 
 from app.core.config import settings
 
-_client: genai.Client | None = None
+_client: Groq | None = None
 
 
 def _parse_json(text: str) -> dict[str, Any]:
@@ -19,12 +19,12 @@ def _parse_json(text: str) -> dict[str, Any]:
     return json.loads(raw.strip())
 
 
-def _get_client() -> genai.Client:
+def _get_client() -> Groq:
     global _client
     if _client is None:
-        if not settings.gemini_api_key:
-            raise RuntimeError("GEMINI_API_KEY is not configured")
-        _client = genai.Client(api_key=settings.gemini_api_key)
+        if not settings.groq_api_key:
+            raise RuntimeError("GROQ_API_KEY is not configured")
+        _client = Groq(api_key=settings.groq_api_key)
     return _client
 
 
@@ -40,11 +40,12 @@ def extract_from_conversation(transcript: str) -> dict[str, Any]:
         "Return JSON only.\n\n"
         f"Transcript:\n{transcript}"
     )
-    response = _get_client().models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
+    
+    response = _get_client().chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
     )
-    return _parse_json(response.text)
+    return _parse_json(response.choices[0].message.content)
 
 
 def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
@@ -56,9 +57,10 @@ def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
         "Ensure the output is valid JSON and contains only the updated profile.\n\n"
         f"Existing Profile:\n{json.dumps(existing_profile)}\n\nNew Conversation:\n{transcript}"
     )
-    response = _get_client().models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
+    
+    response = _get_client().chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
     )
-    return _parse_json(response.text)
+    return _parse_json(response.choices[0].message.content)
 

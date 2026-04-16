@@ -33,7 +33,7 @@ export function MemoryGraph({ profile, tasks = [] }: { profile: any; tasks?: any
     const categories = [
       { key: "facts", label: "Facts", group: "facts", color: "#6366f1" },
       { key: "people", label: "People", group: "people", color: "#ec4899" },
-      { key: "projects", label: "Projects", group: "projects", color: "#8b5cf6" },
+      { key: "projects", label: "Projects", group: "projects", color: "#0ea5e9" },
       { key: "preferences", label: "Preferences", group: "prefs", color: "#10b981" },
       { key: "recurring_topics", label: "Topics", group: "topics", color: "#f59e0b" },
       { key: "tasks", label: "Tasks", group: "tasks", color: "#3b82f6" },
@@ -120,7 +120,7 @@ export function MemoryGraph({ profile, tasks = [] }: { profile: any; tasks?: any
     >
       <div className="absolute top-12 left-12 z-10 pointer-events-none">
         <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-4">
-           <div className="w-3 h-3 rounded-full bg-ringaccent animate-pulse shadow-[0_0_20px_#8b5cf6]" />
+           <div className="w-3 h-3 rounded-full bg-ringaccent animate-pulse shadow-[0_0_20px_#10b981]" />
            Memory Graph
         </h2>
         <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-[0.3em] font-bold opacity-60">Identity Mapping • Visual Context Engine</p>
@@ -166,7 +166,7 @@ export function MemoryGraph({ profile, tasks = [] }: { profile: any; tasks?: any
                 cx={node.x}
                 cy={node.y}
                 r={node.group === "center" ? 22 : node.group === "item" ? 6 : 14}
-                fill={node.group === "center" ? "white" : node.color || "#8b5cf6"}
+                fill={node.group === "center" ? "white" : node.color || "#0ea5e9"}
                 fillOpacity={node.group === "item" ? "0.5" : "1"}
                 className={`${node.group === "center" ? "animate-pulse" : ""} transition-all duration-300 group-hover/node:r-[130%] group-hover/node:fill-opacity-100`}
                 filter={node.group !== "item" ? "url(#glow)" : ""}

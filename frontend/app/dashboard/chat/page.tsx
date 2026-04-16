@@ -193,7 +193,7 @@ export default function ChatPage() {
           <MessageSquareDot className="w-5 h-5 text-zinc-100" />
           <h1 className="font-semibold text-zinc-100">Chat</h1>
           <button className="ml-4 px-3 py-1.5 rounded-lg bg-zinc-800/50 text-xs font-medium text-zinc-300 flex items-center gap-2 hover:bg-zinc-800 transition">
-            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+            <span className="w-2 h-2 rounded-full bg-ringaccent"></span>
             Ring v
           </button>
         </div>

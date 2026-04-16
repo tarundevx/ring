@@ -11,7 +11,7 @@ import {
 } from "@/lib/api";
 import { MOCK_USER_ID } from "@/lib/user";
 
-type VoiceState = "idle" | "listening" | "processing" | "speaking";
+type VoiceState = "idle" | "initializing" | "listening" | "processing" | "speaking";
 
 const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
 const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "";
@@ -22,6 +22,13 @@ export function RingVoiceButton() {
   const router = useRouter();
   const vapiRef = useRef<Vapi | null>(null);
   const transcriptRef = useRef("");
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (transcriptContainerRef.current) {
+      transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
+    }
+  }, [transcript]);
 
   const runToolCall = async (toolCall: any) => {
     const name = toolCall?.function?.name || toolCall?.name;
@@ -122,6 +129,7 @@ export function RingVoiceButton() {
 
   const startCall = async () => {
     if (!vapiRef.current || !assistantId) return;
+    setState("initializing");
     
     let conversations: any[] = [];
     let memory: any = { profile: { facts: [] } };
@@ -196,6 +204,7 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
         onClick={state === "idle" ? startCall : stopCall}
         className="relative w-48 h-48 flex items-center justify-center group outline-none"
         aria-label="Ring voice call"
+        disabled={state === "initializing"}
       >
         {/* Doppler Effect Layers - Trigger only when AI speaks */}
         {state === "speaking" && (
@@ -210,16 +219,16 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
         <div className={`relative z-10 w-full h-full flex items-center justify-center transition-transform duration-700 ${state !== "idle" ? 'scale-110' : 'group-hover:scale-105'}`}>
           <div className="relative w-40 h-40 flex items-center justify-center">
             {/* Outer Ring */}
-            <div className={`absolute inset-0 rounded-full border-[3px] border-blue-500/20 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.6s' }} />
+            <div className={`absolute inset-0 rounded-full border-[3px] border-emerald-400/20 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.6s' }} />
             {/* Third Ring */}
-            <div className={`absolute inset-4 rounded-full border-[3px] border-purple-500/40 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.4s' }} />
+            <div className={`absolute inset-4 rounded-full border-[3px] border-emerald-500/40 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.4s' }} />
             {/* Second Ring */}
-            <div className={`absolute inset-8 rounded-full border-[3px] border-blue-600/60 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.2s' }} />
+            <div className={`absolute inset-8 rounded-full border-[3px] border-emerald-500/60 ${state === "speaking" ? "animate-doppler" : ""}`} style={{ animationDelay: '0.2s' }} />
             {/* Inner Ring */}
-            <div className={`absolute inset-12 rounded-full border-[3px] border-purple-600/80 ${state === "speaking" ? "animate-doppler" : ""}`} />
+            <div className={`absolute inset-12 rounded-full border-[3px] border-emerald-600/80 ${state === "speaking" ? "animate-doppler" : ""}`} />
             
             {/* Center Core */}
-            <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_20px_rgba(37,99,235,0.5)] ${state !== "idle" ? "animate-pulse" : ""}`} />
+            <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.5)] ${(state !== "idle" && state !== "initializing") ? "animate-pulse" : (state === "initializing" ? "animate-spin" : "")}`} />
           </div>
         </div>
       </button>
@@ -234,7 +243,7 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
             </div>
             <p className="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">{state}</p>
           </div>
-          <div className="max-h-64 overflow-y-auto whitespace-pre-wrap text-[16px] leading-relaxed text-zinc-100 scrollbar-hide font-serif italic pr-4">
+          <div ref={transcriptContainerRef} className="max-h-64 overflow-hidden whitespace-pre-wrap text-[16px] leading-relaxed text-zinc-100 font-serif italic pr-4">
             <style>{`
               @keyframes wordFadeIn {
                 from { opacity: 0; transform: translateY(4px); filter: blur(4px); }
@@ -263,6 +272,11 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
                     </p>
                   );
                 })}
+              </div>
+            ) : state === "initializing" ? (
+              <div className="flex items-center gap-3 text-emerald-500 italic">
+                <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                Connecting to Ring systems...
               </div>
             ) : (
               <div className="flex items-center gap-3 text-zinc-500 italic opacity-50">
