@@ -106,8 +106,10 @@ export default function ChatPage() {
       if (transcriptRef.current.trim()) {
         try {
           const res = await createConversation(MOCK_USER_ID, transcriptRef.current);
-          if (res.ai_extraction_skipped) {
+          if (res.ai_error_type === "rate_limit") {
             window.alert("We're receiving too many requests right now. Your conversation is saved, but AI processing is delayed. Please try again in 40 seconds.");
+          } else if (res.ai_error_type === "other") {
+            window.alert("AI extraction failed due to a server error. Your transcript was saved.");
           }
         } catch (e: any) {
           console.error("Failed to store conversation", e);

@@ -27,7 +27,7 @@ def create_conversation_endpoint(
         conversation=ConversationResponse.model_validate(conversation),
         extracted_tasks=extracted["tasks"],
         extracted_reminders=extracted["reminders"],
-        ai_extraction_skipped=extracted.get("ai_extraction_skipped", False),
+        ai_error_type=extracted.get("ai_error_type"),
     )
 
 

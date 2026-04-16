@@ -31,16 +31,20 @@ def _get_client() -> genai.Client:
     return _client
 
 
-def extract_from_conversation(transcript: str) -> dict[str, Any]:
+def process_full_conversation(transcript: str, existing_profile: dict) -> dict[str, Any]:
     from datetime import datetime
     current_time = datetime.now().isoformat()
     prompt = (
         f"Current Time: {current_time}\n"
-        "Extract JSON with keys action_items, reminders, entities, topics.\n"
-        "Each action item should include title, description, due_date(optional, YYYY-MM-DD).\n"
-        "Each reminder should include title, body, remind_at (ISO datetime).\n"
-        "Use the Current Time provided above to resolve relative dates like 'tomorrow', 'next week', 'in 2 hours', etc.\n"
-        "Return JSON only.\n\n"
+        "Analyze the following transcript and perform two operations:\n"
+        "1. Extraction: Identify any action items (tasks) and reminders mentioned.\n"
+        "2. Profile Update: Review the existing user profile and update it with any new facts, people, projects, or preferences from the transcript.\n\n"
+        "Return a JSON object with exactly these two keys:\n"
+        "- 'extraction': { 'action_items': [...], 'reminders': [...] }\n"
+        "  Each action item: { 'title', 'description', 'due_date' (YYYY-MM-DD) }\n"
+        "  Each reminder: { 'title', 'body', 'remind_at' (ISO timestamp) }\n"
+        "- 'updated_profile': { 'people': [], 'projects': [], 'preferences': [], 'recurring_topics': [], 'facts': [] }\n\n"
+        f"Existing Profile:\n{json.dumps(existing_profile)}\n\n"
         f"Transcript:\n{transcript}"
     )
     try:
@@ -50,42 +54,15 @@ def extract_from_conversation(transcript: str) -> dict[str, Any]:
         )
         return _parse_json(response.text)
     except ClientError as e:
-        if e.status_code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+        code = getattr(e, 'code', None) or getattr(e, 'status_code', None)
+        if code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
             raise HTTPException(
                 status_code=429,
                 detail="AI rate limit exceeded. Please wait about a minute and try again."
             )
-        raise HTTPException(status_code=400, detail=f"AI Client Error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"AI Client Error ({code}): {str(e)}")
     except APIError as e:
-        raise HTTPException(status_code=502, detail="Upstream AI provider error. Please try again later.")
+        raise HTTPException(status_code=502, detail=f"Upstream AI provider error: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error during AI extraction: {str(e)}")
-
-
-def merge_memory_profile(existing_profile: dict, transcript: str) -> dict:
-    prompt = (
-        "You are an identity-mapping engine. Analyze the conversation and the existing profile JSON.\n"
-        "Extract ANY new facts, people, projects, preferences, or recurring topics mentioned.\n"
-        "BE PROACTIVE: If the user mentions a friend's name, add it to 'people'. If they mention a hobby, add to 'preferences'.\n"
-        "Return the full merged JSON profile with keys: people, projects, preferences, recurring_topics, facts.\n"
-        "Ensure the output is valid JSON and contains only the updated profile.\n\n"
-        f"Existing Profile:\n{json.dumps(existing_profile)}\n\nNew Conversation:\n{transcript}"
-    )
-    try:
-        response = _get_client().models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-        )
-        return _parse_json(response.text)
-    except ClientError as e:
-        if e.status_code == 429 or "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-            raise HTTPException(
-                status_code=429,
-                detail="AI rate limit exceeded. Please wait about a minute and try again."
-            )
-        raise HTTPException(status_code=400, detail=f"AI Client Error: {str(e)}")
-    except APIError as e:
-        raise HTTPException(status_code=502, detail="Upstream AI provider error. Please try again later.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error during AI merging: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error during AI processing: {str(e)}")
 

@@ -4,11 +4,12 @@ import uuid
 from datetime import date, datetime
 
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from app.db.models import Conversation, Reminder, Task
 from app.services.chunking import chunk_transcript
 from app.services.embeddings import embed_text
-from app.services.llm_service import extract_from_conversation, merge_memory_profile
+from app.services.llm_service import process_full_conversation
 from app.services.qdrant_service import (
     ensure_collections,
     get_user_profile,
@@ -22,20 +23,21 @@ def summarize(transcript: str) -> str:
     return " ".join(lines[:2])[:220]
 
 
-from fastapi import HTTPException
-
 def process_conversation(db: Session, conversation: Conversation) -> dict:
     chunks = chunk_transcript(conversation.transcript)
     embeddings = [embed_text(chunk) for chunk in chunks]
     ensure_collections()
     upsert_conversation_chunks(conversation.user_id, conversation.id, chunks, embeddings, conversation.tags)
 
-    ai_extraction_skipped = False
+    ai_error_type = None
     extracted_tasks = []
     extracted_reminders = []
 
     try:
-        extraction = extract_from_conversation(conversation.transcript)
+        existing_profile = get_user_profile(conversation.user_id)
+        full_res = process_full_conversation(conversation.transcript, existing_profile)
+        
+        extraction = full_res.get("extraction", {})
         extracted_tasks = extraction.get("action_items", [])
         extracted_reminders = extraction.get("reminders", [])
 
@@ -68,28 +70,26 @@ def process_conversation(db: Session, conversation: Conversation) -> dict:
             )
             db.add(reminder)
             
-        existing_profile = get_user_profile(conversation.user_id)
-        merged_profile = merge_memory_profile(existing_profile, conversation.transcript)
+        merged_profile = full_res.get("updated_profile", existing_profile)
         profile_embedding = embed_text(str(merged_profile))
         upsert_user_profile(conversation.user_id, merged_profile, profile_embedding)
 
     except HTTPException as e:
         if e.status_code == 429:
-            ai_extraction_skipped = True
+            ai_error_type = "rate_limit"
             print(f"Extraction skipped due to rate limit: {e.detail}")
         else:
             raise e
     except Exception as e:
         print(f"Extraction failed with unexpected error: {str(e)}")
-        # We don't want to fail the whole pipe if just AI fails
-        ai_extraction_skipped = True
+        ai_error_type = "other"
 
     db.commit()
 
     return {
         "tasks": extracted_tasks, 
         "reminders": extracted_reminders,
-        "ai_extraction_skipped": ai_extraction_skipped
+        "ai_error_type": ai_error_type
     }
 
 
@@ -105,4 +105,3 @@ def create_conversation(db: Session, user_id: uuid.UUID, transcript: str, durati
     db.commit()
     db.refresh(conversation)
     return conversation
-
