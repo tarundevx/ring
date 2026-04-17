@@ -1,6 +1,6 @@
 import type { Conversation, Reminder, Task } from "@/lib/types";
 
-const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://ring-scva.onrender.com").replace(/\/$/, "");
 
 function headers(userId: string) {
   return { "Content-Type": "application/json", "x-user-id": userId };
