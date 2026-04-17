@@ -67,30 +67,6 @@ export default function LandingPage() {
           Powered by Neural Synapse
         </p>
       </div>
-
-      <style jsx global>{`
-        @keyframes headingGlow {
-          0%, 100% { filter: drop-shadow(0 0 20px rgba(16,185,129,0)); }
-          50% { filter: drop-shadow(0 0 30px rgba(16,185,129,0.2)); }
-        }
-        .animate-heading-glow {
-          animation: headingGlow 4s ease-in-out infinite;
-        }
-        @keyframes spinSlow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes spinSlower {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        .animate-spin-slow {
-          animation: spinSlow 20s linear infinite;
-        }
-        .animate-spin-slower {
-          animation: spinSlower 35s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }
