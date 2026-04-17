@@ -194,7 +194,8 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
 4. If asked to schedule a meeting, use 'schedule_google_meeting'.
 5. If asked to find information in their documents, use 'search_google_drive'.
 6. If asked to reply to an email, use 'draft_gmail_reply'.
-7. Keep replies concise and direct, maintaining the persona of a high-end digital soulmate.`;
+7. Keep replies concise and direct, maintaining the persona of a high-end digital soulmate.
+    8. VERY IMPORTANT: When scheduling meetings, you MUST use 'schedule_google_meeting' and provide start_time and end_time in ISO-8601 format (e.g., '2024-04-17T14:30:00Z'). If the user doesn't specify an end time, assume it lasts 1 hour.`;
 
     await vapiRef.current.start(assistantId, {
       variableValues: {
@@ -212,7 +213,7 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
     <div className="flex flex-col items-center gap-12">
       <button
         onClick={state === "idle" ? startCall : stopCall}
-        className="relative w-48 h-48 flex items-center justify-center group outline-none"
+        className="relative w-40 h-40 md:w-48 md:h-48 flex items-center justify-center group outline-none"
         aria-label="Ring voice call"
         disabled={state === "initializing"}
       >
@@ -244,7 +245,7 @@ CRITICAL INSTRUCTIONS FOR YOU (THE ASSISTANT):
       </button>
 
       {state !== "idle" && (
-        <div className="w-[440px] rounded-[32px] bg-ringcard/80 backdrop-blur-xl border border-white/5 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-8">
+        <div className="w-full max-w-[440px] rounded-[32px] bg-ringcard/80 backdrop-blur-xl border border-white/5 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex gap-1">
               <div className="w-1 h-3 bg-ringaccent animate-bounce" style={{ animationDelay: '0s' }} />

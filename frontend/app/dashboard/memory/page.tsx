@@ -17,7 +17,7 @@ export default async function MemoryPage() {
 
   return (
     <div className="flex-1 overflow-y-auto h-full bg-[#111111]">
-      <div className="max-w-6xl mx-auto p-8 space-y-10 pb-20">
+      <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 pb-20">
         
         {/* Header Section */}
         <div className="flex flex-col gap-2">

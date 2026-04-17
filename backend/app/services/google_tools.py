@@ -19,14 +19,26 @@ def get_calendar_tools(db: Session, user_id: Any):
         ).execute()
         return events_result.get('items', [])
 
-    def schedule_event(summary: str, start_time: str, end_time: str, description: str = ""):
+    def schedule_event(summary: str, start_time: str, end_time: str | None = None, description: str = ""):
+        # Fallback end time: +1 hour if not provided
+        if not end_time:
+            try:
+                dt = datetime.datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                end_time = (dt + datetime.timedelta(hours=1)).isoformat()
+            except:
+                end_time = start_time
+
         event = {
             'summary': summary,
             'description': description,
             'start': {'dateTime': start_time, 'timeZone': 'UTC'},
             'end': {'dateTime': end_time, 'timeZone': 'UTC'},
         }
-        return cal.events().insert(calendarId='primary', body=event).execute()
+        try:
+            return cal.events().insert(calendarId='primary', body=event).execute()
+        except Exception as e:
+            print(f"Error scheduling event: {e}")
+            return {"error": str(e)}
 
     return {
         "list_upcoming_events": list_upcoming_events,
