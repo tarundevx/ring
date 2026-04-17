@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-1.5 mt-8">
         {navLinks.map((link) => (
-          <Link key={link.href} href={link.href} className={getLinkClass(link.href)} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link key={link.href} href={link.href as any} className={getLinkClass(link.href)} onClick={() => setIsMobileMenuOpen(false)}>
             <link.icon className="w-4 h-4" />
             {link.label}
           </Link>
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="mt-8 mb-2 px-3 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">Features</div>
         
         {featureLinks.map((link) => (
-          <Link key={link.href} href={link.href} className={getLinkClass(link.href)} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link key={link.href} href={link.href as any} className={getLinkClass(link.href)} onClick={() => setIsMobileMenuOpen(false)}>
             <link.icon className="w-4 h-4" />
             {link.label}
           </Link>

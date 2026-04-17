@@ -20,7 +20,7 @@ export default async function ConversationsPage() {
         <p className="text-muted-foreground">No conversations found or failed to load.</p>
       ) : (
         conversations.map((conversation) => (
-          <Link key={conversation.id} href={`/conversations/${conversation.id}`} className="block">
+          <Link key={conversation.id} href={`/conversations/${conversation.id}` as any} className="block">
             <ConversationCard conversation={conversation} />
           </Link>
         ))
